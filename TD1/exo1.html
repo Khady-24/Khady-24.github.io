@@ -1,64 +1,22 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Test Géolocalisation</title>
-  <link rel="stylesheet" href="../CSS/Style.css"/>
-
+  <link rel="stylesheet" href="../CSS/Style.css">
 </head>
 <body>
 
   <h1>Test Géolocalisation</h1>
 
   <h2>getCurrentPosition()</h2>
-  <div id="current" class="result">
-  </div>
+  <div id="current" class="result"></div>
 
   <h2>watchPosition()</h2>
-  <div id="watch" class="result"> 
+  <div id="watch" class="result"></div>
 
-  </div>
-
-  <script>
-    window.onload = () => {
-      const currentDiv = document.getElementById('current');
-      const watchDiv = document.getElementById('watch');
-
-      if (!navigator.geolocation) {
-        currentDiv.textContent = 'Géolocalisation non supportée.';
-        watchDiv.textContent = 'Géolocalisation non supportée.';
-        return;
-      }
-
-      function formatDate(timestamp) {
-        return new Date(timestamp).toLocaleString();
-      }
-
-      function afficher(position, container) {
-        const c = position.coords;
-        container.innerHTML = `
-          Longitude : ${c.longitude} <br>
-          Latitude : ${c.latitude} <br>
-          Altitude : ${c.altitude !== null ? c.altitude + ' m' : 'Indisponible'} <br>
-          Précision : ±${c.accuracy} m <br>
-          Vitesse : ${c.speed !== null ? c.speed + ' m/s' : 'Indisponible'} <br>
-          Date : ${formatDate(position.timestamp)}
-        `;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        pos => afficher(pos, currentDiv),
-        err => currentDiv.textContent = 'Erreur getCurrentPosition : ' + err.message,
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-      );
-
-      navigator.geolocation.watchPosition(
-        pos => afficher(pos, watchDiv),
-        err => watchDiv.textContent = 'Erreur watchPosition : ' + err.message,
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-      );
-    };
-  </script>
+  <script src="../JS/main.js"></script>
+  <script>startGeoTD1();</script>
 
 </body>
 </html>
