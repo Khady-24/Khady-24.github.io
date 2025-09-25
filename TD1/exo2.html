@@ -4,9 +4,8 @@
   <meta charset="UTF-8">
   <title>Exercice Leaflet</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-  <style>
-    #map { height: 100vh; width: 100%; }
-  </style>
+  <link rel="stylesheet" href="../CSS/Style.css"/>
+
 </head>
 <body>
   <div id="map"></div>
@@ -26,11 +25,13 @@
     });
     L.control.layers({ "OSM": osm, "Stamen": stamen }).addTo(map);
     L.marker(nice).addTo(map).bindPopup("Nice - Centre ville");
+
     const bermudes = [
       [25.774, -80.19],
       [18.466, -66.118],
       [32.321, -64.757]
     ];
+
     L.polygon(bermudes, {color: "red"}).addTo(map).bindPopup("Triangle des Bermudes");
 
     if (navigator.geolocation) {
@@ -59,6 +60,8 @@
         L.marker(marseille).addTo(map).bindPopup(`Marseille<br>Distance de vous : ${distance} km`).openPopup();
       });
     }
+
+
     const geojsonExample = {
       "type": "FeatureCollection",
       "features": [
@@ -69,6 +72,8 @@
         }
       ]
     };
+
+
     L.geoJSON(geojsonExample).addTo(map);
     fetch("https://router.project-osrm.org/route/v1/driving/7.2620,43.7102;5.3698,43.2965?overview=full&geometries=geojson")
       .then(res => res.json())
@@ -76,6 +81,7 @@
         const coords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
         L.polyline(coords, {color:"orange"}).addTo(map).bindPopup("Route Nice → Marseille (OSRM)");
       });
+
   </script>
 </body>
 </html>
