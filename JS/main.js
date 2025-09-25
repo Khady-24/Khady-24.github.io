@@ -89,7 +89,7 @@ function startMapTD1() {
       L.polyline([marseille, nice], {color:"green"}).addTo(map).bindPopup("Marseille ↔ Nice");
       L.polyline([marseille, userPos], {color:"purple"}).addTo(map);
 
-      // Distance Marseille ↔ Utilisateur (Haversine)
+      // Distance avec Marseille
       const R = 6371;
       const toRad = x => x * Math.PI / 180;
       const dLat = toRad(lat - marseille[0]);
