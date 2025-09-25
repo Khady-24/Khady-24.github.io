@@ -57,7 +57,7 @@
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         const distance = (R * c).toFixed(2);
 
-        L.marker(marseille).addTo(map).bindPopup(`Marseille<br>Distance de vous : ${distance} km`).openPopup();
+        L.marker(marseille).addTo(map).bindPopup(`Marseille<br> est à une distance de vous de : ${distance} km`).openPopup();
       });
     }
 
