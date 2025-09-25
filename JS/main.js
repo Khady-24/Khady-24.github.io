@@ -101,7 +101,7 @@ function startMapTD1() {
       const distance = (R * c).toFixed(2);
 
       L.marker(marseille).addTo(map)
-        .bindPopup(`Marseille<br>Distance : ${distance} km`)
+        .bindPopup(`Marseille<br> est à une Distance de : ${distance} km`)
         .openPopup();
     });
   }
