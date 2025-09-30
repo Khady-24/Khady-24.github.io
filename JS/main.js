@@ -128,3 +128,8 @@ function startMapTD1() {
       L.polyline(coords, {color:"orange"}).addTo(map).bindPopup("Route Nice → Marseille (OSRM)");
     });
 }
+
+
+// ===================================
+// TD2 - Exercice ThreeJS
+// ===================================
