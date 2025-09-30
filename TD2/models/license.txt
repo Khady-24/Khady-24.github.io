@@ -1,0 +1,11 @@
+Model Information:
+* title:	Smurf
+* source:	https://sketchfab.com/3d-models/smurf-bc66e52ed13a4f8cb5fc890355f89a40
+* author:	lomepawol (https://sketchfab.com/lomepawol)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Smurf" (https://sketchfab.com/3d-models/smurf-bc66e52ed13a4f8cb5fc890355f89a40) by lomepawol (https://sketchfab.com/lomepawol) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

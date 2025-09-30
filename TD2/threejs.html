@@ -66,23 +66,30 @@ const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
 directionalLight.position.set(5, 10, 7.5);
 scene.add(directionalLight);
 
+//  Lumière ponctuelle près du modèle
+const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+pointLight.position.set(0, 2, 2);
+scene.add(pointLight);
+
 /* Cube avec  texture 
 ________________________*/
 
 const geometry = new THREE.BoxGeometry(1, 1, 1);
-const texture = new THREE.TextureLoader().load('textures/textureL.jpg'); // image sur les faces du  cube
+const texture = new THREE.TextureLoader().load('textures/ciel.jpg'); // image sur les faces du  cube
 const material = new THREE.MeshBasicMaterial({ map: texture });
 const cube = new THREE.Mesh(geometry, material);
+cube.position.set(-5,0,0);
 scene.add(cube);
 
 /* 
-   5. Charger un modèle GLTF (AJOUTÉ)
+   5. Charger un modèle GLTF 
 _______________________________________*/
 const loader = new GLTFLoader();
+
 loader.load(
-    'https://threejs.org/examples/models/gltf/Flamingo.glb',
+    'models/scene.gltf',
     function (gltf) {
-        gltf.scene.scale.set(0.05, 0.05, 0.05); // << ici tu redimensionnes
+        gltf.scene.scale.set(1.00, 1.09, 1.09); 
         gltf.scene.position.set(2, 0, 0);
         scene.add(gltf.scene);
     },
@@ -97,14 +104,14 @@ loader.load(
 /* Pluie (particules) 
 ________________________*/
 
-const rainCount = 500;
+const rainCount = 300;
 const rainGeometry = new THREE.BufferGeometry();
 const rainVertices = [];
 
 for (let i = 0; i < rainCount; i++) {
     rainVertices.push(
         (Math.random() - 0.5) * 20,  // x
-        Math.random() * 20,          // y
+        Math.random() * 10,          // y
         (Math.random() - 0.5) * 20   // z
     );
 }
@@ -123,6 +130,19 @@ window.addEventListener('deviceorientation', (event) => {
     // On fait bouger le cube en fonction de l'inclinaison
     cube.rotation.x = beta * 0.01;
     cube.rotation.y = gamma * 0.01;
+});
+
+/* Device motion : pour déplacer le modèle GLTF avec l’accéléromètre */
+window.addEventListener('devicemotion', (event) => {
+    if (!event.accelerationIncludingGravity) return;
+
+    const ax = event.accelerationIncludingGravity.x || 0;
+    const ay = event.accelerationIncludingGravity.y || 0;
+
+    // On fait bouger la position du cube en fonction du mouvement du téléphone
+    cube.position.x += ax * 0.01; 
+    cube.position.y += ay * 0.01;
+
 });
 
 
@@ -160,7 +180,5 @@ window.addEventListener('resize', () => {
 });
 
 </script> 
-<!--
- <script type="module" src="../JS/main.js"></script> -->
 </body>
 </html>
