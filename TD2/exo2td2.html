@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Exercice 2 - BabylonJS</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        canvas { width: 100%; height: 100%; display: block; }
+    </style>
+</head>
+<body>
+    <canvas id="renderCanvas"></canvas>
+
+    <!-- Import BabylonJS depuis CDN -->
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+
+    <script>
+    // Récupération du canvas
+    const canvas = document.getElementById("renderCanvas");
+    const engine = new BABYLON.Engine(canvas, true);
+
+    const createScene = () => {
+        const scene = new BABYLON.Scene(engine);
+
+        /* Caméra */
+        const camera = new BABYLON.ArcRotateCamera(
+            "camera",
+            Math.PI / 4, Math.PI / 4,
+            6, // distance
+            BABYLON.Vector3.Zero(),
+            scene
+        );
+        camera.attachControl(canvas, true);
+
+        /* Lumières */
+        const light1 = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(1, 1, 0), scene);
+        const light2 = new BABYLON.PointLight("light2", new BABYLON.Vector3(0, 1, -1), scene);
+
+        /* Objet générique : sphère texturée */
+        const sphere = BABYLON.MeshBuilder.CreateSphere("sphere", { diameter: 2 }, scene);
+        const sphereMaterial = new BABYLON.StandardMaterial("sphereMat", scene);
+        sphereMaterial.diffuseTexture = new BABYLON.Texture("textures/ciel.jpg", scene); 
+        sphere.material = sphereMaterial;
+
+        /* Charger un modèle GLTF */
+        BABYLON.SceneLoader.Append("models/", "scene.gltf", scene, function (scene) {
+            const model = scene.meshes[scene.meshes.length - 1];
+            model.scaling = new BABYLON.Vector3(0.5, 0.5, 0.5);
+            model.position = new BABYLON.Vector3(3, 0, 0);
+        });
+
+        /* Animation de la sphère */
+        scene.registerBeforeRender(() => {
+            sphere.rotation.y += 0.01;
+        });
+
+        /* DeviceOrientation : rotation de la sphère avec le smartphone */
+        window.addEventListener("deviceorientation", (event) => {
+            const gamma = event.gamma || 0;
+            const beta = event.beta || 0;
+            sphere.rotation.x = beta * 0.01;
+            sphere.rotation.z = gamma * 0.01;
+        });
+
+        /* DeviceMotion : translation avec accéléromètre */
+        window.addEventListener("devicemotion", (event) => {
+            if (!event.accelerationIncludingGravity) return;
+            const ax = event.accelerationIncludingGravity.x || 0;
+            const ay = event.accelerationIncludingGravity.y || 0;
+            sphere.position.x += ax * 0.01;
+            sphere.position.y += ay * 0.01;
+        });
+
+        return scene;
+    };
+
+    const scene = createScene();
+    engine.runRenderLoop(() => {
+        scene.render();
+    });
+
+    window.addEventListener("resize", () => {
+        engine.resize();
+    });
+    </script>
+</body>
+</html>
