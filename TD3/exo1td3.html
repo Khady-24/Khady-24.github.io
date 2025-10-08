@@ -156,7 +156,7 @@ zeroMat.specularColor = new BABYLON.Color3(0, 0, 0);
 zeroPoint.material = zeroMat;
 
 
-//  Affichage des drapeaux des Pays
+//  Affichage des drapeaux des Pays sur la sphere 
     
 fetch("https://restcountries.com/v3.1/all?fields=name,latlng,flags")
   .then(res => res.json())
@@ -193,6 +193,37 @@ fetch("https://restcountries.com/v3.1/all?fields=name,latlng,flags")
     });
   });
 
+
+
+  // ---Affichage des drapeaux des Pays la carte du monde Leaflet ---
+fetch("https://restcountries.com/v3.1/all?fields=name,latlng,flags")
+  .then(res => res.json())
+  .then(data => {
+    data.forEach(country => {
+      if (!country.latlng || country.latlng.length !== 2 || !country.flags) return;
+
+      const lat = country.latlng[0];
+      const lon = country.latlng[1];
+      const flagUrl = country.flags.png;
+
+      const flagIcon = L.icon({
+        iconUrl: flagUrl,
+        iconSize: [13, 9], // iconSize[largeur, hauteur]
+        iconAnchor: [12, 7],
+      });
+
+      const marker = L.marker([lat, lon], { icon: flagIcon }).addTo(map);
+
+      marker.on("click", () => {
+        const phi = (90 - lat) * Math.PI / 180;
+        const theta = (lon + 180 + LON_OFFSET_DEG) * Math.PI / 180;
+        camera.alpha = theta + Math.PI/2;
+        camera.beta = phi;
+
+        map.setView([lat, lon], 5);
+      });
+    });
+  });
 
       // Marqueur de position ( point sur la france )
     
