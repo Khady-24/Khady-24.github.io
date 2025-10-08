@@ -67,13 +67,8 @@
 
   <script>
 
-// rotation horizontale à appliquer aux longitudes (en degrés).
-// Ajuste si nécessaire : -90 ou +90 corrige souvent l'alignement.
-const LON_OFFSET_DEG = -90;
-
-
-
-
+// rotation horizontale appliqué aux longitudes .
+const LON_OFFSET_DEG = -90; 
 
 
 
@@ -126,41 +121,26 @@ const LON_OFFSET_DEG = -90;
       const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
       light.intensity = 1.1;
 
-
     
       // Sphère Terre
       sphere = BABYLON.MeshBuilder.CreateSphere("earth", { diameter: 2, segments: 64 }, scene);
-      //sphere.scaling = new BABYLON.Vector3(-1,1,1);
       const material = new BABYLON.StandardMaterial("earthMat", scene);
       material.diffuseTexture = new BABYLON.Texture("CarteDuMonde2.png", scene);
       material.diffuseTexture.uScale = -1;
       material.diffuseTexture.vScale = -1; // on inverse verticalement
 
-
       material.specularColor = new BABYLON.Color3(0,0,0);
       material.emissiveColor = new BABYLON.Color3(0.2,0.2,0.2);
-
-      //material.diffuseColor.vScale=-1;
     
       sphere.material = material;
-      //sphere.rotation.y = Math.PI / 2;
-sphere.rotation.y = -Math.PI / 85; // ≈ -18°
+      sphere.rotation.y = -Math.PI / 80; 
 
-
-
-      /* 
-      material
-     material.vscale = 1;
-      material.uscale = -1;
-      material.rotation.x = Math.PI; */
-
-      
       // Fonction Lat/Lon -> Vector3
       latLonToVector3 = function(lat, lon, radius=1) {
-       // const phi = (90 - lat) * (Math.PI / 180);
-       // const theta = (lon + 180) * (Math.PI / 180);
+    
         const phi = (90 - lat) * Math.PI / 180;    // latitude -> angle polaire
         const theta = (lon - 180) * Math.PI / 180; // longitude -> angle azimutal
+
         const x = radius * Math.sin(phi) * Math.cos(theta);
         const y = radius * Math.cos(phi);
         const z = radius * Math.sin(phi) * Math.sin(theta);
@@ -176,41 +156,9 @@ zeroMat.specularColor = new BABYLON.Color3(0, 0, 0);
 zeroPoint.material = zeroMat;
 
 
-      // Marqueurs pays
-      /*const countries = [
-        { name: "Senegal", lat: 14.4974, lon: -14.4524, color: 0xff0000 },
-        { name: "Arabie Saoudite", lat: 23.8859, lon: 45.0792, color: 0x008000 },
-        { name: "Maroc", lat: 31.7917, lon: -7.0926, color: 0xffd700 },
-        { name: "Algerie", lat: 28.0339, lon: 1.6596, color: 0x0000ff },
-        { name: "France", lat: 46.2276, lon: 2.2137, color: 0x0000ff },
-        { name: "Espagne", lat: 40.4637, lon: -3.7492, color: 0xff0000 },
-        { name: "Italie", lat: 41.8719, lon: 12.5674, color: 0x008000 },
-        { name: "Allemagne", lat: 51.1657, lon: 10.4515, color: 0x0000ff },
-        { name: "Royaume Uni", lat: 55.3781, lon: -3.4360, color: 0xff0000 }
-      ];
-
-      countries.forEach(c => {
-        const marker = BABYLON.MeshBuilder.CreateSphere(c.name, { diameter: 0.05 }, scene);
-        marker.position = latLonToVector3(c.lat, c.lon, 1.01);
-        const mat = new BABYLON.StandardMaterial(c.name + "Mat", scene);
-        mat.diffuseColor = BABYLON.Color3.FromHexString("#" + c.color.toString(16).padStart(6,'0'));
-        marker.material = mat;
-
-        // ActionManager pour cliquer sur le marqueur
-        marker.actionManager = new BABYLON.ActionManager(scene);
-        marker.actionManager.registerAction(
-          new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, () => {
-            map.setView([c.lat, c.lon], 5);
-          })
-        );
-      });
-
-      */
-
-
-      // --- Récupération des pays et création des drapeaux ---2
-      /*
-fetch("https://restcountries.com/v3.1/all")
+//  Affichage des drapeaux des Pays
+    
+fetch("https://restcountries.com/v3.1/all?fields=name,latlng,flags")
   .then(res => res.json())
   .then(data => {
     data.forEach(country => {
@@ -220,76 +168,76 @@ fetch("https://restcountries.com/v3.1/all")
       const lon = country.latlng[1];
       const flagUrl = country.flags.png;
 
-      // Définir un rayon légèrement supérieur à celui de la sphère
-      const baseRadius = 1;      // rayon de la Terre
-      const offset = 0.08;       // distance devant la sphère
-      const radius = baseRadius + offset;
-
-      // Création du plane pour le drapeau
-      const plane = BABYLON.MeshBuilder.CreatePlane(
-        country.name.common + "Flag",
-        { width: 0.2, height: 0.1 },
-        scene
-      );
+      const radius = 1.05; // légèrement au-dessus de la sphère
+      const plane = BABYLON.MeshBuilder.CreatePlane(country.name.common + "Flag", { width: 0.08, height: 0.05 }, scene);
       plane.position = latLonToVector3(lat, lon, radius);
 
-      // Material avec gestion CORS
       const matFlag = new BABYLON.StandardMaterial(country.name.common + "FlagMat", scene);
       matFlag.diffuseTexture = new BABYLON.Texture(flagUrl, scene, false, true, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, null, null, true);
-      matFlag.specularColor = new BABYLON.Color3(0, 0, 0);
+      matFlag.specularColor = new BABYLON.Color3(0,0,0);
       plane.material = matFlag;
 
-      // Toujours orienté vers la caméra
       plane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
 
-      // Interaction clic : recentre la carte Leaflet
+      // Interaction clic
       plane.actionManager = new BABYLON.ActionManager(scene);
       plane.actionManager.registerAction(
         new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, () => {
           map.setView([lat, lon], 5);
+          const phi = (90 - lat) * Math.PI / 180;
+          const theta = (lon + 180 + LON_OFFSET_DEG) * Math.PI / 180;
+          camera.alpha = theta + Math.PI/2;
+          camera.beta = phi;
         })
       );
     });
   });
-*/
 
 
+      // Marqueur de position ( point sur la france )
+    
+    if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
 
-// test avec un drapeau ...
-const plane = BABYLON.MeshBuilder.CreatePlane("FranceFlag", {width:0.15, height:0.15}, scene);
-plane.position = latLonToVector3(46.2276, 2.2137, 1.01);
-const mat = new BABYLON.StandardMaterial("FranceFlagMat", scene);
-mat.diffuseTexture = new BABYLON.Texture("https://flagcdn.com/w320/fr.png", scene);
-mat.specularColor = new BABYLON.Color3(0,0,0);
-plane.material = mat;
-plane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
-plane.actionManager = new BABYLON.ActionManager(scene);
-plane.actionManager.registerAction(
-  new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, () => {
-    map.setView([46.2276, 2.2137], 5);
-  })
-);
+        const radius = 1.05; // légèrement au-dessus de la sphère
 
-      // Marqueur de position utilisateur
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(pos => {
-          const lat = pos.coords.latitude;
-          const lon = pos.coords.longitude;
-          const myMarker = BABYLON.MeshBuilder.CreateSphere("myPos", { diameter: 0.05 }, scene);
-          myMarker.position = latLonToVector3(lat, lon, 1.01);
-          const mat = new BABYLON.StandardMaterial("myPosMat", scene);
-          mat.diffuseColor = new BABYLON.Color3(1,0,0);
-          myMarker.material = mat;
+        // --- POINT BLEU ---
+        const point = BABYLON.MeshBuilder.CreateSphere("myPos", { diameter: 0.05 }, scene);
+        point.position = latLonToVector3(lat, lon, radius);
 
-          // ActionManager pour cliquer sur le marqueur
-          myMarker.actionManager = new BABYLON.ActionManager(scene);
-          myMarker.actionManager.registerAction(
+        const mat = new BABYLON.StandardMaterial("myPosMat", scene);
+        mat.diffuseColor = new BABYLON.Color3(0, 0, 1); // bleu
+        mat.specularColor = new BABYLON.Color3(0,0,0);
+        point.material = mat;
+
+        // --- TEXTE AU-DESSUS "Vous êtes ici "---
+        const label = BABYLON.MeshBuilder.CreatePlane("userText", { width: 0.4, height: 0.1 }, scene);
+        label.position = latLonToVector3(lat, lon, radius + 0.08);
+        label.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+
+        const labelMat = new BABYLON.StandardMaterial("labelMat", scene);
+        const dynamicTexture = new BABYLON.DynamicTexture("dynText", { width:512, height:128 }, scene, true);
+        dynamicTexture.hasAlpha = true;
+        dynamicTexture.drawText("Vous êtes ici", null, 80, "bold 60px Arial", "blue", "transparent", true);
+        labelMat.diffuseTexture = dynamicTexture;
+        labelMat.specularColor = new BABYLON.Color3(0,0,0);
+        label.material = labelMat;
+
+        // --- Interaction au clic   ---
+        point.actionManager = new BABYLON.ActionManager(scene);
+        point.actionManager.registerAction(
             new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, () => {
-              map.setView([lat, lon], 5);
+                map.setView([lat, lon], 5);
+                const phi = (90 - lat) * Math.PI / 180;
+                const theta = (lon + 180 + LON_OFFSET_DEG) * Math.PI / 180;
+                camera.alpha = theta + Math.PI/2;
+                camera.beta = phi;
             })
-          );
-        });
-      }
+        );
+    });
+}
 
       return scene;
     };
@@ -297,20 +245,17 @@ plane.actionManager.registerAction(
     const scene = createScene();
 
     //  interaction Leaflet carte et sphere 
-    map.on('click', function(e) {
-      const lat = e.latlng.lat;
-      const lon = e.latlng.lng;
+  
+map.on('click', function(e) {
+    const lat = e.latlng.lat;
+    const lon = e.latlng.lng;
 
-    const targetPos = latLonToVector3(lat, lon, 1);
+    const phi = (90 - lat) * Math.PI / 180;
+    const theta = (lon + 180 + LON_OFFSET_DEG) * Math.PI / 180;
 
-      const radius = camera.radius;
-      const phi = Math.acos(targetPos.y / radius);
-      const theta = Math.atan2(targetPos.z, targetPos.x);
-
-      camera.alpha = theta + Math.PI/2;
-      camera.beta = phi;
-
-    });
+    camera.alpha = theta + Math.PI/2;  // ajuste si la rotation semble inversée
+    camera.beta = phi;
+});
 
     engine.runRenderLoop(() => scene.render());
     window.addEventListener("resize", () => engine.resize());
