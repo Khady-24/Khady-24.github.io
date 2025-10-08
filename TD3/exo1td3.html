@@ -66,6 +66,17 @@
   <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
 
   <script>
+
+// rotation horizontale à appliquer aux longitudes (en degrés).
+// Ajuste si nécessaire : -90 ou +90 corrige souvent l'alignement.
+const LON_OFFSET_DEG = -90;
+
+
+
+
+
+
+
     /********************
      * Variables globales
      ********************/
@@ -99,8 +110,8 @@
       // Caméra
       camera = new BABYLON.ArcRotateCamera(
         "camera",
-        Math.PI / 4,
-        Math.PI / 4,
+       0,
+      0,
         6,
         BABYLON.Vector3.Zero(),
         scene
@@ -115,18 +126,27 @@
       const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
       light.intensity = 1.1;
 
+
+    
       // Sphère Terre
       sphere = BABYLON.MeshBuilder.CreateSphere("earth", { diameter: 2, segments: 64 }, scene);
-      sphere.scaling = new BABYLON.Vector3(-1,1,1);
-
+      //sphere.scaling = new BABYLON.Vector3(-1,1,1);
       const material = new BABYLON.StandardMaterial("earthMat", scene);
       material.diffuseTexture = new BABYLON.Texture("CarteDuMonde2.png", scene);
+      material.diffuseTexture.uScale = -1;
+      material.diffuseTexture.vScale = -1; // on inverse verticalement
+
+
       material.specularColor = new BABYLON.Color3(0,0,0);
       material.emissiveColor = new BABYLON.Color3(0.2,0.2,0.2);
 
       //material.diffuseColor.vScale=-1;
     
       sphere.material = material;
+      //sphere.rotation.y = Math.PI / 2;
+sphere.rotation.y = -Math.PI / 85; // ≈ -18°
+
+
 
       /* 
       material
@@ -137,13 +157,24 @@
       
       // Fonction Lat/Lon -> Vector3
       latLonToVector3 = function(lat, lon, radius=1) {
-        const phi = (90 - lat) * (Math.PI / 180);
-        const theta = (lon + 180) * (Math.PI / 180);
-        const x = -radius * Math.sin(phi) * Math.cos(theta);
+       // const phi = (90 - lat) * (Math.PI / 180);
+       // const theta = (lon + 180) * (Math.PI / 180);
+        const phi = (90 - lat) * Math.PI / 180;    // latitude -> angle polaire
+        const theta = (lon - 180) * Math.PI / 180; // longitude -> angle azimutal
+        const x = radius * Math.sin(phi) * Math.cos(theta);
         const y = radius * Math.cos(phi);
         const z = radius * Math.sin(phi) * Math.sin(theta);
         return new BABYLON.Vector3(x, y, z);
       };
+
+// --- Point test à 0°N, 0°E ---
+const zeroPoint = BABYLON.MeshBuilder.CreateSphere("zeroPoint", { diameter: 0.05 }, scene);
+zeroPoint.position = latLonToVector3(0, 0, 1.05); // un peu au-dessus de la sphère
+const zeroMat = new BABYLON.StandardMaterial("zeroMat", scene);
+zeroMat.diffuseColor = new BABYLON.Color3(1, 0, 1); // magenta pour bien voir
+zeroMat.specularColor = new BABYLON.Color3(0, 0, 0);
+zeroPoint.material = zeroMat;
+
 
       // Marqueurs pays
       /*const countries = [
@@ -223,8 +254,9 @@ fetch("https://restcountries.com/v3.1/all")
 */
 
 
+
 // test avec un drapeau ...
-const plane = BABYLON.MeshBuilder.CreatePlane("FranceFlag", {width:0.2, height:0.15}, scene);
+const plane = BABYLON.MeshBuilder.CreatePlane("FranceFlag", {width:0.15, height:0.15}, scene);
 plane.position = latLonToVector3(46.2276, 2.2137, 1.01);
 const mat = new BABYLON.StandardMaterial("FranceFlagMat", scene);
 mat.diffuseTexture = new BABYLON.Texture("https://flagcdn.com/w320/fr.png", scene);
