@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <body style="background:black; display:flex; justify-content:center; align-items:center; height:100vh;">
+    <video id="video" autoplay playsinline width="640" height="480"></video>
+    <script>
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+          document.getElementById('video').srcObject = stream;
+        })
+        .catch(err => alert("Erreur accès caméra : " + err));
+    </script>
+  </body>
+</html>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Carte interactive IA - Contrôle par la main</title>
+
+  <!-- Librairies -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ml5@0.12.2/dist/ml5.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      flex-direction: row;
+      height: 100vh;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: white;
+    }
+
+    #map {
+      flex: 1;
+    }
+
+    #cameraContainer {
+      flex: 1;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      background: #000;
+      padding-top: 80px; /* espace pour les instructions */
+    }
+
+    #instructions {
+      color: white;
+      text-align: center;
+      font-size: 1em;
+      margin-bottom: 10px;
+    }
+
+    canvas {
+      width: 90%;
+      height: auto;
+      max-height: 75%;
+      transform: scaleX(-1);
+    }
+
+    #status {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.7);
+      padding: 15px 25px;
+      border-radius: 15px;
+      font-size: 1.2em;
+      color: #00ffcc;
+      text-align: center;
+      min-width: 250px;
+      max-width: 80%;
+      box-sizing: border-box;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <div id="cameraContainer">
+    <div id="instructions">
+      <p>🖐️ Main ouverte → Zoom</p>
+      <p>✊ Poing fermé : balancer votre poing en vous rapprochant de l'écran et en le reculant → Dézoom</p>
+      <p>⬅️ Main à gauche / ➡️ Main à droite → Déplacement carte</p>
+    </div>
+  </div>
+  <div id="status">En attente du geste...</div>
+
+  <script>
+    // === LEAFLET (OpenStreetMap) ===
+    const map = L.map('map').setView([48.8566, 2.3522], 12); // Paris
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    // === P5 + ML5 ===
+    let video;
+    let handpose;
+    let predictions = [];
+    let lastActionTime = 0;
+    let messageDiv;
+
+    function setup() {
+      const canvas = createCanvas(640, 480);
+      canvas.parent('cameraContainer');
+
+      video = createCapture(VIDEO);
+      video.size(width, height);
+      video.hide();
+
+      messageDiv = document.getElementById('status');
+
+      // Charger le modèle Handpose classique
+      handpose = ml5.handpose(video, () => {
+        console.log("✅ Modèle Handpose chargé !");
+        handpose.on("predict", results => predictions = results);
+      });
+    }
+
+    function draw() {
+      background(0);
+      image(video, 0, 0, width, height);
+
+      if (predictions.length > 0) {
+        const hand = predictions[0];
+        drawHand(hand);
+        const openFingers = countOpenFingers(hand);
+        const handCenterX = getHandCenterX(hand);
+        const now = millis();
+
+        if (now - lastActionTime > 1500) {
+          // Zoom / dézoom
+          if (openFingers >= 4) {
+            map.zoomIn();
+            showMessage("🖐️ Zoom détecté");
+            lastActionTime = now;
+          } else if (openFingers === 0) {
+            map.zoomOut();
+            showMessage("✊ Dézoom détecté");
+            lastActionTime = now;
+          } else {
+            // Déplacement horizontal
+            if (handCenterX < width * 0.4) {
+              map.panBy([-100, 0]);
+              showMessage("⬅️ Carte déplacée à gauche");
+              lastActionTime = now;
+            } else if (handCenterX > width * 0.6) {
+              map.panBy([100, 0]);
+              showMessage("➡️ Carte déplacée à droite");
+              lastActionTime = now;
+            } else {
+              showMessage("❓ Signe non identifié");
+              lastActionTime = now;
+            }
+          }
+        }
+      }
+    }
+
+    // === Calcul centre main X ===
+    function getHandCenterX(hand) {
+      let sumX = 0;
+      for (let keypoint of hand.landmarks) {
+        sumX += keypoint[0];
+      }
+      return sumX / hand.landmarks.length;
+    }
+
+    // === Compter doigts ouverts ===
+    function countOpenFingers(hand) {
+      let open = 0;
+      const tips = [8, 12, 16, 20];
+      for (let tip of tips) {
+        if (hand.landmarks[tip][1] < hand.landmarks[tip - 2][1]) open++;
+      }
+      // Pouce
+      if (hand.landmarks[4][0] > hand.landmarks[3][0]) open++;
+      return open;
+    }
+
+    // === Afficher message ===
+    function showMessage(text) {
+      messageDiv.textContent = text;
+      if (text.includes("non")) {
+        messageDiv.style.color = "#ff5555";
+      } else if (text.includes("Dézoom")) {
+        messageDiv.style.color = "#ffaa00";
+      } else {
+        messageDiv.style.color = "#00ffcc";
+      }
+    }
+
+    // === Dessiner la main ===
+    function drawHand(hand) {
+      noFill();
+      stroke(0, 255, 0);
+      strokeWeight(2);
+      for (let keypoint of hand.landmarks) {
+        circle(keypoint[0], keypoint[1], 6);
+      }
+    }
+  </script>
+</body>
+</html>
